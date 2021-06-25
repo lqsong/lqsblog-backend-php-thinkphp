@@ -11,8 +11,10 @@ declare (strict_types = 1);
 namespace app\service\admin;
 
 use app\model\ResourceModel;
+use app\model\ResourcePermissionModel;
 use app\validate\Resource;
 use enum\ResultCode;
+use think\facade\Db;
 
 class ResourceService 
 {
@@ -50,17 +52,35 @@ class ResourceService
             }
         }
 
-        $data = [
-            'pid' => $info['pid'],
-            'name' => $info['name'],            
-            'urlcode'=> empty($info['urlcode'])?'':$info['urlcode'],
-            'type'=> empty($info['type'])?0:$info['type'],
-            'perms'=> empty($info['perms'])?'':$info['perms'],
-            'permsLevel'=> empty($info['permsLevel'])?'':$info['permsLevel'],
-        ];
-        $record = ResourceModel::create($data);
+        // 创建事务
+        Db::startTrans();
+        $resource = [];
+        try {
+            $data = [
+                'pid' => $info['pid'],
+                'name' => $info['name'],            
+                'urlcode'=> empty($info['urlcode'])?'':$info['urlcode'],
+                'type'=> empty($info['type'])?0:$info['type'],
+                'perms'=> empty($info['perms'])?'':$info['perms'],
+                'permsLevel'=> empty($info['permsLevel'])?'':$info['permsLevel'],
+            ];
+            $record = ResourceModel::create($data);
+            $resource = $record->toArray();
 
-        return $record->toArray();
+            // 修改资源权限关联表
+            self::saveBatchResourcePermission($resource);    
+
+            // 提交事务
+            Db::commit();
+    
+        } catch (\Exception $e) {
+
+            // 回滚事务
+            Db::rollback();
+            throw new \think\exception\ValidateException($e->getMessage());
+        } 
+
+        return $resource;
     }
 
     /**
@@ -75,17 +95,72 @@ class ResourceService
         // 验证参数，不通过会抛出异常
         validate(Resource::class)->scene('admin_service_update')->check($info);
 
-        $data = [
-            /* 'pid' => $info['pid'], */
-            'name' => $info['name'],            
-            'urlcode'=> empty($info['urlcode'])?'':$info['urlcode'],
-            'type'=> empty($info['type'])?0:$info['type'],
-            'perms'=> empty($info['perms'])?'':$info['perms'],
-            'permsLevel'=> empty($info['permsLevel'])?'':$info['permsLevel'],
-        ];
+        // 创建事务
+        Db::startTrans();
+        try {
 
-        $record = ResourceModel::find($info['id']);
-        return $record->save($data);
+            $data = [
+                /* 'pid' => $info['pid'], */
+                'name' => $info['name'],            
+                'urlcode'=> empty($info['urlcode'])?'':$info['urlcode'],
+                'type'=> empty($info['type'])?0:$info['type'],
+                'perms'=> empty($info['perms'])?'':$info['perms'],
+                'permsLevel'=> empty($info['permsLevel'])?'':$info['permsLevel'],
+            ];
+    
+            $record = ResourceModel::find($info['id']);
+            $record->save($data);
+
+            // 修改资源权限关联表
+            self::saveBatchResourcePermission($info);    
+    
+            // 提交事务
+            Db::commit();
+
+        } catch (\Exception $e) {
+
+            // 回滚事务
+            Db::rollback();
+            throw new \think\exception\ValidateException($e->getMessage());
+        }  
+
+        
+        return true;
+    }
+
+    /**
+     * 批量修改资源权限关联表
+     *
+     * @param array $resource 资源字段
+     * @return array
+     * @throws ValidateException
+     */
+    public static function saveBatchResourcePermission(array $resource): array
+    {
+        if(empty($resource)) {
+            throw new \think\exception\ValidateException('资源数据为空');
+        }
+
+        // 先清空同资源ID下resource permission数据
+        ResourcePermissionModel::destroy(function($query) use($resource) {
+            $query->where('resource_id', $resource['id']);
+        });
+
+        // 再批量添加
+        if(!empty($resource['perms'])) {
+            $permsArr = explode(',', $resource['perms']);
+            $rplist = [];
+            foreach ($permsArr as $value) {
+                $rplist[] = [
+                    'resource_id' => $resource['id'],
+                    'permission_id'=> $value,
+                ];
+            }
+            if(!empty($rplist)) {
+                $resourcePermission = new ResourcePermissionModel;
+                return $resourcePermission->saveAll($rplist)->toArray();
+            }
+        }
     }
 
     /**
@@ -105,10 +180,30 @@ class ResourceService
         if($count > 0) {
             throw new \think\exception\ValidateException('有子元素无法删除，请先删除子元素');
         }
-     
-        return ResourceModel::destroy(function($query) use($id) {
+
+        // 创建事务
+        Db::startTrans();
+        try {
+
+            ResourceModel::destroy(function($query) use($id) {
                 $query->where('id', $id);
-        });
+            });
+
+            ResourcePermissionModel::destroy(function($query) use($id) {
+                $query->where('resource_id', $id);
+            });
+
+            // 提交事务
+            Db::commit();
+        } catch (\Exception $e) {
+
+            // 回滚事务
+            Db::rollback();
+            throw new \think\exception\ValidateException($e->getMessage());
+        }       
+     
+        return true;    
+        
     }
 
 
