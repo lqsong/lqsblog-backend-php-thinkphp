@@ -146,6 +146,7 @@ class ResourceService
             $query->where('resource_id', $resource['id']);
         });
 
+        $res = [];
         // 再批量添加
         if(!empty($resource['perms'])) {
             $permsArr = explode(',', $resource['perms']);
@@ -158,9 +159,11 @@ class ResourceService
             }
             if(!empty($rplist)) {
                 $resourcePermission = new ResourcePermissionModel;
-                return $resourcePermission->saveAll($rplist)->toArray();
+                $res = $resourcePermission->saveAll($rplist)->toArray();
             }
         }
+
+        return $res;
     }
 
     /**

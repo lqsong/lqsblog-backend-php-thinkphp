@@ -132,6 +132,7 @@ class RoleService
             $query->where('role_id', $role['id']);
         });
 
+        $res = [];
         // 再批量添加
         if(!empty($role['resources'])) {
             $resourcesArr = explode(',', $role['resources']);
@@ -144,9 +145,11 @@ class RoleService
             }
             if(!empty($rrlist)) {
                 $roleResource = new RoleResourceModel;
-                return $roleResource->saveAll($rrlist)->toArray();
-            }
+                $res = $roleResource->saveAll($rrlist)->toArray();
+            } 
         }
+
+        return $res;
 
     }
 
