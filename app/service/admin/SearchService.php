@@ -91,7 +91,7 @@ class SearchService
         if(!empty($categoryIds)) {
             $catArr = explode(',', $categoryIds);
             foreach ($catArr as  $value) {
-                $keyArr[] = 'tag_' . $value;
+                $keyArr[] = 'category_' . $value;
             }
         }
 
