@@ -16,16 +16,16 @@ Route::group('admin/v1', function () {
     Route::get('user/info$', 'user/info');
     Route::post('user/logout$', 'user/logout');
 
-    Route::get('articles$', 'article/articleList');
-    Route::post('articles$', 'article/articleCreate');
-    Route::put('articles/:id', 'article/articleUpdate');
-    Route::delete('articles/:id', 'article/articleDelete');
-    Route::get('articles/:id', 'article/articleRead');
     Route::get('article/categorys$', 'article/categoryList');
     Route::post('article/categorys$', 'article/categoryCreate');
     Route::put('article/categorys/:id', 'article/categoryUpdate');
     Route::delete('article/categorys/:id', 'article/categoryDelete');
     Route::get('article/categorys/cascader$', 'article/categoryCascader');
+    Route::get('articles$', 'article/articleList');
+    Route::post('articles$', 'article/articleCreate');
+    Route::put('articles/:id', 'article/articleUpdate');
+    Route::delete('articles/:id', 'article/articleDelete');
+    Route::get('articles/:id', 'article/articleRead');
 
     Route::get('works$', 'works/worksList');
     Route::post('works$', 'works/worksCreate');
@@ -39,21 +39,21 @@ Route::group('admin/v1', function () {
     Route::delete('topics/:id', 'topics/topicsDelete');
     Route::get('topics/:id', 'topics/topicsRead');
 
+    Route::get('link/categorys$', 'link/categoryList');
+    Route::post('link/categorys$', 'link/categoryCreate');
+    Route::put('link/categorys/:id', 'link/categoryUpdate');
+    Route::delete('link/categorys/:id', 'link/categoryDelete');
     Route::get('links$', 'link/linkList');
     Route::post('links$', 'link/linkCreate');
     Route::put('links/:id', 'link/linkUpdate');
     Route::delete('links/:id', 'link/linkDelete');
     Route::get('links/:id', 'link/linkRead');
-    Route::get('link/categorys$', 'link/categoryList');
-    Route::post('link/categorys$', 'link/categoryCreate');
-    Route::put('link/categorys/:id', 'link/categoryUpdate');
-    Route::delete('link/categorys/:id', 'link/categoryDelete');
 
+    Route::get('tags/search$', 'tag/tagsSearch');
     Route::get('tags$', 'tag/tagsList');
     Route::post('tags$', 'tag/tagsCreate');
     Route::put('tags/:id', 'tag/tagsUpdate');
     Route::delete('tags/:id', 'tag/tagsDelete');
-    Route::get('tags/search$', 'tag/tagsSearch');
 
     Route::get('searchs$', 'search/searchList');
     Route::get('searchs/keywords$', 'search/keywordsList');
@@ -69,19 +69,19 @@ Route::group('admin/v1', function () {
     Route::get('config$', 'config/configRead');
     Route::post('config$', 'config/configCreate');
 
+    Route::get('apis/cascader$', 'api/apiCascader');
+    Route::get('apis/all$', 'api/apiListAll');
     Route::get('apis$', 'api/apiList');
     Route::post('apis$', 'api/apiCreate');
     Route::put('apis/:id', 'api/apiUpdate');
     Route::delete('apis/:id', 'api/apiDelete');
-    Route::get('apis/cascader$', 'api/apiCascader');
-    Route::get('apis/all$', 'api/apiListAll');
 
+    Route::get('menus/cascader$', 'menu/menuCascader');
+    Route::get('menus/all$', 'menu/menuListAll');
     Route::get('menus$', 'menu/menuList');
     Route::post('menus$', 'menu/menuCreate');
     Route::put('menus/:id', 'menu/menuUpdate');
     Route::delete('menus/:id', 'menu/menuDelete');
-    Route::get('menus/cascader$', 'menu/menuCascader');
-    Route::get('menus/all$', 'menu/menuListAll');
 
     Route::get('roles$', 'role/roleList');
     Route::post('roles$', 'role/roleCreate');
